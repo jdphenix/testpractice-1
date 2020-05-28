@@ -7,11 +7,13 @@ namespace TestingRandomTests
 {
     public class DiceRollerTests
     {
+        private Mock<IRandomizer> _randomMock;
         private DiceRoller _sut;
 
         public DiceRollerTests()
         {
-            _sut = new DiceRoller(new Randomizer());
+            _randomMock = new Mock<IRandomizer>();
+            _sut = new DiceRoller(_randomMock.Object);
         }
 
         [Theory]
@@ -27,17 +29,13 @@ namespace TestingRandomTests
         // TODO: Fix this test
         [Theory]
         [InlineData("2d6", 2, 6)]
-        [InlineData("1d6", 1, 6)]
         [InlineData("3d6", 3, 6)]
+        [InlineData("1d8", 1, 8)]
         public void Roll_Never_Out_Of_Range(string diceExpression, int dieCount, int sideCount)
         {
-            var randomMock = new Mock<IRandomizer>();
-            randomMock.Setup(r => r.Next(It.IsAny<int>())).Returns(() => dieCount);
-            var diceRoller = new DiceRoller(randomMock.Object);
+            _ = _sut.Roll(diceExpression);
 
-            var actual = diceRoller.Roll(diceExpression);
-
-            randomMock.Verify(mock => mock.Next(6), Times.Exactly(dieCount));
+            _randomMock.Verify(r => r.Next(sideCount), Times.Exactly(dieCount));
         }
 
         // TODO: Figure out a way to test making sure the dice roller gets random numbers the right number of times
